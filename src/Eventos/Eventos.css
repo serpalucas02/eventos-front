@@ -1,19 +1,17 @@
-/* General container for the eventos component */
 .eventos-container {
     padding: 2rem;
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
 }
 
-/* Title styling */
 .eventos-container h2 {
     text-align: center;
     color: #333;
     margin-bottom: 1.5rem;
 }
 
-/* Add button styling */
-.btn-agregar {
+.btn-agregar,
+.btn-reporte {
     display: inline-block;
     margin-bottom: 1rem;
     padding: 0.75rem 1.5rem;
@@ -27,11 +25,11 @@
     transition: background-color 0.3s ease;
 }
 
-.btn-agregar:hover {
+.btn-agregar:hover,
+.btn-reporte:hover {
     background-color: #005fa3;
 }
 
-/* Modal overlay styling */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -45,7 +43,6 @@
     z-index: 1000;
 }
 
-/* Modal styling */
 .modal {
     background: white;
     padding: 2rem;
@@ -100,7 +97,6 @@
     background-color: #aaaaaa;
 }
 
-/* Table styling */
 .eventos-list table {
     width: -webkit-fill-available;
     border-collapse: collapse;
@@ -147,5 +143,7 @@
 }
 
 .header-row {
-    text-align: end;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
 }

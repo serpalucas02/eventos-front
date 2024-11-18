@@ -12,7 +12,7 @@ const Register = () => {
 
     const handleRegister = async () => {
         try {
-            await axios.post('http://127.0.0.1:8080/api/usuario/registrar', { user, password });
+            await axios.post(`${import.meta.env.VITE_URL_BASE}/api/usuario/registrar`, { user, password });
             setSuccess('Usuario registrado exitosamente');
             setError('');
         } catch (err) {

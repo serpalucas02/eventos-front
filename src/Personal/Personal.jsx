@@ -14,7 +14,7 @@ const Personal = () => {
 
     const fetchPersonal = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:8080/api/personal/obtener');
+            const response = await axios.get(`${import.meta.env.VITE_URL_BASE}/api/personal/obtener`);
             setPersonal(response.data);
         } catch (err) {
             console.error('Error al obtener el personal:', err);
@@ -27,16 +27,17 @@ const Personal = () => {
         return `${day}/${month}/${year}`;
     };
 
-    const agregarPersonal = async () => {
+    const agregarPersonal = async (e) => {
+        e.preventDefault();
         try {
             if (editingPersona) {
                 const { _id, ...personaSinId } = nuevoPersonal;
-                await axios.put(`http://127.0.0.1:8080/api/personal/actualizar/${_id}`, personaSinId);
+                await axios.put(import.meta.env.VITE_URL_BASE + `/api/personal/actualizar/${_id}`, personaSinId);
                 setPersonal(personal.map(persona => persona._id === _id ? { ...personaSinId, _id } : persona));
                 setEditingPersona(null);
                 setSuccessModalVisible(true);
             } else {
-                const response = await axios.post('http://127.0.0.1:8080/api/personal/guardar', nuevoPersonal);
+                const response = await axios.post(`${import.meta.env.VITE_URL_BASE}/api/personal/guardar`, nuevoPersonal);
                 setPersonal([...personal, response.data]);
                 setSuccessModalVisible(true);
             }
@@ -44,13 +45,13 @@ const Personal = () => {
             setError('');
             setModalVisible(false);
         } catch (err) {
-            setError('Error al agregar o actualizar el personal');
+            setError(err.response?.data?.error || 'Error al agregar o actualizar el personal');
         }
     };
 
     const eliminarPersonal = async () => {
         try {
-            await axios.delete(`http://127.0.0.1:8080/api/personal/borrar/${personaToDelete}`);
+            await axios.delete(import.meta.env.VITE_URL_BASE + `/api/personal/borrar/${personaToDelete}`);
             setPersonal(personal.filter((persona) => persona._id !== personaToDelete));
             setConfirmModalVisible(false);
             setPersonaToDelete(null);
@@ -87,38 +88,45 @@ const Personal = () => {
                 <div className="modal-overlay">
                     <div className="modal">
                         <h3>{editingPersona ? 'Editar Personal' : 'Agregar Personal'}</h3>
-                        <input
-                            type="text"
-                            placeholder="Nombre"
-                            value={nuevoPersonal.nombre}
-                            onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, nombre: e.target.value })}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Apellido"
-                            value={nuevoPersonal.apellido}
-                            onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, apellido: e.target.value })}
-                        />
-                        <input
-                            type="text"
-                            placeholder="DNI"
-                            value={nuevoPersonal.dni}
-                            onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, dni: e.target.value })}
-                        />
-                        <input
-                            type="date"
-                            placeholder="Fecha de Nacimiento"
-                            value={nuevoPersonal.fecha_nacimiento}
-                            onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, fecha_nacimiento: e.target.value })}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Ocupación"
-                            value={nuevoPersonal.ocupacion}
-                            onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, ocupacion: e.target.value })}
-                        />
-                        <button onClick={agregarPersonal}>{editingPersona ? 'Actualizar' : 'Guardar'}</button>
-                        <button onClick={() => setModalVisible(false)}>Cancelar</button>
+                        <form onSubmit={agregarPersonal}>
+                            <input
+                                type="text"
+                                placeholder="Nombre"
+                                value={nuevoPersonal.nombre}
+                                onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, nombre: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="text"
+                                placeholder="Apellido"
+                                value={nuevoPersonal.apellido}
+                                onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, apellido: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="text"
+                                placeholder="DNI"
+                                value={nuevoPersonal.dni}
+                                onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, dni: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="date"
+                                placeholder="Fecha de Nacimiento"
+                                value={nuevoPersonal.fecha_nacimiento}
+                                onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, fecha_nacimiento: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="text"
+                                placeholder="Ocupación"
+                                value={nuevoPersonal.ocupacion}
+                                onChange={(e) => setNuevoPersonal({ ...nuevoPersonal, ocupacion: e.target.value })}
+                                required
+                            />
+                            <button type='submit'>{editingPersona ? 'Actualizar' : 'Guardar'}</button>
+                            <button onClick={() => setModalVisible(false)}>Cancelar</button>
+                        </form>
                         {error && <p style={{ color: 'red' }}>{error}</p>}
                     </div>
                 </div>

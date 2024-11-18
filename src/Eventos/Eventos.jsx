@@ -15,7 +15,7 @@ const Eventos = () => {
 
     const fetchEventos = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:8080/api/eventos/obtener');
+            const response = await axios.get(`${import.meta.env.VITE_URL_BASE}/api/eventos/obtener`);
             setEventos(response.data);
         } catch (err) {
             console.error('Error al obtener los eventos:', err);
@@ -28,18 +28,19 @@ const Eventos = () => {
         return `${day}/${month}/${year}`;
     };
 
-    const agregarEvento = async () => {
+    const agregarEvento = async (e) => {
+        e.preventDefault();
         try {
             if (editingEvento) {
                 const { _id, ...eventoSinId } = nuevoEvento;
 
-                await axios.put(`http://127.0.0.1:8080/api/eventos/actualizar/${_id}`, eventoSinId);
+                await axios.put(import.meta.env.VITE_URL_BASE + `/api/eventos/actualizar/${_id}`, eventoSinId);
 
                 setEventos(eventos.map(evento => evento._id === _id ? { ...eventoSinId, _id } : evento));
                 setEditingEvento(null);
                 setSuccessMessage('Evento actualizado con éxito');
             } else {
-                const response = await axios.post('http://127.0.0.1:8080/api/eventos/guardar', nuevoEvento);
+                const response = await axios.post(`${import.meta.env.VITE_URL_BASE}/api/eventos/guardar`, nuevoEvento);
                 setEventos([...eventos, response.data]);
                 setSuccessMessage('Evento agregado con éxito');
             }
@@ -48,13 +49,13 @@ const Eventos = () => {
             setModalVisible(false);
             setSuccessModalVisible(true);
         } catch (err) {
-            setError('Error al agregar o actualizar el evento');
+            setError(err.response?.data?.error || 'Error al agregar o actualizar el evento');
         }
     };
 
     const eliminarEvento = async () => {
         try {
-            await axios.delete(`http://127.0.0.1:8080/api/eventos/borrar/${eventoToDelete}`);
+            await axios.delete(import.meta.env.VITE_URL_BASE + `/api/eventos/borrar/${eventoToDelete}`);
             setEventos(eventos.filter((evento) => evento._id !== eventoToDelete));
             setConfirmModalVisible(false);
             setEventoToDelete(null);
@@ -71,6 +72,24 @@ const Eventos = () => {
         setModalVisible(true);
     };
 
+    const generarReporte = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_URL_BASE}/api/eventos/reporte`, {
+                responseType: 'blob',
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'reporte_eventos.pdf');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (err) {
+            alert('Error al generar el reporte');
+        }
+    };
+
     useEffect(() => {
         fetchEventos();
     }, []);
@@ -80,6 +99,7 @@ const Eventos = () => {
             <h2>ABM de Eventos</h2>
 
             <div className="header-row">
+                <button className="btn-reporte" onClick={generarReporte}>Generar Reporte</button>
                 <button className="btn-agregar" onClick={() => {
                     setModalVisible(true);
                     setEditingEvento(null);
@@ -92,38 +112,45 @@ const Eventos = () => {
                 <div className="modal-overlay">
                     <div className="modal">
                         <h3>{editingEvento ? 'Editar Evento' : 'Agregar Evento'}</h3>
-                        <input
-                            type="text"
-                            placeholder="Nombre"
-                            value={nuevoEvento.nombre}
-                            onChange={(e) => setNuevoEvento({ ...nuevoEvento, nombre: e.target.value })}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Lugar"
-                            value={nuevoEvento.lugar}
-                            onChange={(e) => setNuevoEvento({ ...nuevoEvento, lugar: e.target.value })}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Equipamiento"
-                            value={nuevoEvento.equipamiento}
-                            onChange={(e) => setNuevoEvento({ ...nuevoEvento, equipamiento: e.target.value })}
-                        />
-                        <input
-                            type="date"
-                            placeholder="Fecha"
-                            value={nuevoEvento.fecha}
-                            onChange={(e) => setNuevoEvento({ ...nuevoEvento, fecha: e.target.value })}
-                        />
-                        <input
-                            type="number"
-                            placeholder="Cantidad de Personas"
-                            value={nuevoEvento.cantidad_personas}
-                            onChange={(e) => setNuevoEvento({ ...nuevoEvento, cantidad_personas: e.target.value })}
-                        />
-                        <button onClick={agregarEvento}>{editingEvento ? 'Actualizar' : 'Guardar'}</button>
-                        <button onClick={() => setModalVisible(false)}>Cancelar</button>
+                        <form onSubmit={agregarEvento}>
+                            <input
+                                type="text"
+                                placeholder="Nombre"
+                                value={nuevoEvento.nombre}
+                                onChange={(e) => setNuevoEvento({ ...nuevoEvento, nombre: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="text"
+                                placeholder="Lugar"
+                                value={nuevoEvento.lugar}
+                                onChange={(e) => setNuevoEvento({ ...nuevoEvento, lugar: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="text"
+                                placeholder="Equipamiento"
+                                value={nuevoEvento.equipamiento}
+                                onChange={(e) => setNuevoEvento({ ...nuevoEvento, equipamiento: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="date"
+                                placeholder="Fecha"
+                                value={nuevoEvento.fecha}
+                                onChange={(e) => setNuevoEvento({ ...nuevoEvento, fecha: e.target.value })}
+                                required
+                            />
+                            <input
+                                type="number"
+                                placeholder="Cantidad de Personas"
+                                value={nuevoEvento.cantidad_personas}
+                                onChange={(e) => setNuevoEvento({ ...nuevoEvento, cantidad_personas: e.target.value })}
+                                required
+                            />
+                            <button type='submit'>{editingEvento ? 'Actualizar' : 'Guardar'}</button>
+                            <button onClick={() => setModalVisible(false)}>Cancelar</button>
+                        </form>
                         {error && <p style={{ color: 'red' }}>{error}</p>}
                     </div>
                 </div>
